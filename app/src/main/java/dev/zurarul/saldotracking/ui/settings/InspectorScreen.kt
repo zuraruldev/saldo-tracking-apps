@@ -1,5 +1,6 @@
 package dev.zurarul.saldotracking.ui.settings
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +36,7 @@ import dev.zurarul.saldotracking.ui.home.TransactionDraft
 import dev.zurarul.saldotracking.ui.home.TransactionSheet
 import dev.zurarul.saldotracking.ui.home.timeLabel
 import dev.zurarul.saldotracking.ui.theme.LocalCashflowColors
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 
@@ -41,10 +46,14 @@ fun InspectorScreen(
     onPromote: (NotificationLog, TransactionDraft) -> Unit,
     onBack: () -> Unit
 ) {
+    BackHandler(onBack = onBack)
     var activePromote by remember { mutableStateOf<Pair<NotificationLog, TransactionDraft>?>(null) }
+    var promotedIds by remember { mutableStateOf(emptySet<Long>()) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val cashflow = LocalCashflowColors.current
-    val now = remember { Instant.now() }
-    val zone = remember { ZoneId.systemDefault() }
+    val now = Instant.now()
+    val zone = ZoneId.systemDefault()
 
     Column(
         modifier = Modifier
@@ -155,7 +164,7 @@ fun InspectorScreen(
                                 )
                             }
 
-                            if (log.canPromote()) {
+                            if (log.canPromote(promotedIds)) {
                                 OutlinedButton(
                                     onClick = { activePromote = log to log.toDraft() },
                                     modifier = Modifier.align(Alignment.End)
@@ -168,6 +177,8 @@ fun InspectorScreen(
                 }
             }
         }
+
+        SnackbarHost(hostState = snackbarHostState)
     }
 
     activePromote?.let { (log, draft) ->
@@ -175,7 +186,11 @@ fun InspectorScreen(
             initial = draft,
             onSave = { updated ->
                 onPromote(log, updated)
+                promotedIds = promotedIds + log.id
                 activePromote = null
+                scope.launch {
+                    snackbarHostState.showSnackbar("Transaksi berhasil dicatat")
+                }
             },
             onDelete = null,
             onDismiss = { activePromote = null }

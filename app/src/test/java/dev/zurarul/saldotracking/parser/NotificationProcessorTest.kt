@@ -143,6 +143,23 @@ class NotificationProcessorTest {
     }
 
     @Test
+    fun process_deduplicatesSlightlyOutOfOrderConcurrentTimestamps() {
+        val processor = NotificationProcessor()
+        val slightlyLaterFirst = processor.process(
+            raw("com.shopee.id", "ShopeePay", "Pembayaran ShopeePay Rp 35.000 berhasil", at = t0 + 200),
+            enabled
+        )!!
+        assertEquals(LogStatus.CAPTURED, slightlyLaterFirst.log.status)
+
+        val slightlyEarlierSecond = processor.process(
+            raw("com.shopeepay.id", "ShopeePay", "Pembayaran Rp 35.000 berhasil", at = t0),
+            enabled
+        )!!
+        assertEquals(LogStatus.IGNORED_DUPLICATE, slightlyEarlierSecond.log.status)
+        assertNull(slightlyEarlierSecond.transaction)
+    }
+
+    @Test
     fun process_capturesBothSidesOfLivinToDanaSelfTransfer() {
         val processor = NotificationProcessor()
         val livinOut = processor.process(

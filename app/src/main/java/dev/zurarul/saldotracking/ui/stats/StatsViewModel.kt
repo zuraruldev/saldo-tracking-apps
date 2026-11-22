@@ -21,15 +21,16 @@ class StatsViewModel(
     container: AppContainer
 ) : ViewModel() {
     private val periodFlow = MutableStateFlow(Period.DAILY)
-    private val anchorFlow = MutableStateFlow(YearMonth.now())
+    private val todayFlow = MutableStateFlow(LocalDate.now(ZoneId.systemDefault()))
+    private val anchorFlow = MutableStateFlow(YearMonth.from(todayFlow.value))
 
     val uiState: StateFlow<StatsUiState> = combine(
         container.repository.transactions,
         periodFlow,
-        anchorFlow
-    ) { txs, period, anchor ->
+        anchorFlow,
+        todayFlow
+    ) { txs, period, anchor, today ->
         val zone = ZoneId.systemDefault()
-        val today = LocalDate.now(zone)
         buildStatsUiState(
             txs = txs,
             period = period,
@@ -48,6 +49,16 @@ class StatsViewModel(
             today = LocalDate.now()
         )
     )
+
+    fun refreshToday() {
+        val zone = ZoneId.systemDefault()
+        val newToday = LocalDate.now(zone)
+        val prevToday = todayFlow.value
+        if (newToday != prevToday) {
+            anchorFlow.value = rollAnchorForNewToday(anchorFlow.value, prevToday, newToday)
+            todayFlow.value = newToday
+        }
+    }
 
     fun setPeriod(period: Period) {
         periodFlow.value = period

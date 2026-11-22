@@ -58,6 +58,11 @@ class BackupCodecTest {
                 """{"version":1,"baseBalanceIdr":0,"transactions":[{"amountIdr":1000,"type":"FOO","sourceApp":"DANA","title":"x","timestampMillis":1,"isManual":true}]}"""
             )
         }
+        assertThrows(BackupFormatException::class.java) {
+            BackupCodec.decode(
+                """{"version":1,"baseBalanceIdr":0,"transactions":[{"amountIdr":1000,"type":"EXPENSE","sourceApp":"DANA","title":"x","timestampMillis":999999999999999,"isManual":true}]}"""
+            )
+        }
     }
 
     @Test

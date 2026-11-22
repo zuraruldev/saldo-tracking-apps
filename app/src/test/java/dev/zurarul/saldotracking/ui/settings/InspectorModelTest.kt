@@ -46,6 +46,13 @@ class InspectorModelTest {
     }
 
     @Test
+    fun canPromote_returnsFalseOnceLogIdIsInPromotedSet() {
+        val item = log(LogStatus.IGNORED_UNPARSED)
+        assertTrue(item.canPromote(emptySet()))
+        assertFalse(item.canPromote(setOf(item.id)))
+    }
+
+    @Test
     fun toDraft_prefillsAmountTypeTitleAndTimestampFromLog() {
         val unparsedWithAmount = log(
             status = LogStatus.IGNORED_UNPARSED,

@@ -30,6 +30,9 @@ data class HomeUiState(
     val autoTrackOn: Boolean
 )
 
+fun isAutoTrackActive(connected: Boolean, accessGranted: Boolean): Boolean =
+    connected && accessGranted
+
 fun buildHomeUiState(
     settings: AppSettings,
     txs: List<Transaction>,

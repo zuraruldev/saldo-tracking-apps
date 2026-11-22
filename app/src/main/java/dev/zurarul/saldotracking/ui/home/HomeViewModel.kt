@@ -24,20 +24,22 @@ class HomeViewModel(
     private val container: AppContainer
 ) : ViewModel() {
     private val accessGranted = MutableStateFlow(false)
+    private val nowFlow = MutableStateFlow(Instant.now())
     private var latestTransactions: List<Transaction> = emptyList()
 
     val uiState: StateFlow<HomeUiState> = combine(
         container.settingsRepository.settings,
         container.repository.transactions,
         ListenerStatus.connected,
-        accessGranted
-    ) { settings, txs, connected, granted ->
+        accessGranted,
+        nowFlow
+    ) { settings, txs, connected, granted, now ->
         latestTransactions = txs
         buildHomeUiState(
             settings = settings,
             txs = txs,
-            autoTrackOn = connected || granted,
-            now = Instant.now(),
+            autoTrackOn = isAutoTrackActive(connected = connected, accessGranted = granted),
+            now = now,
             zone = ZoneId.systemDefault()
         )
     }.stateIn(
@@ -53,6 +55,7 @@ class HomeViewModel(
     )
 
     fun refreshAccess(context: Context) {
+        nowFlow.value = Instant.now()
         val granted = ListenerStatus.isAccessGranted(context)
         accessGranted.value = granted
         if (granted && !ListenerStatus.connected.value) {

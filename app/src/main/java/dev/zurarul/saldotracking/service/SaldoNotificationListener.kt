@@ -12,9 +12,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class SaldoNotificationListener : NotificationListenerService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val mutex = Mutex()
 
     override fun onListenerConnected() {
         super.onListenerConnected()
@@ -63,9 +66,11 @@ class SaldoNotificationListener : NotificationListenerService() {
 
         val app = application as? SaldoApplication ?: return
         scope.launch {
-            val enabled = app.container.settingsRepository.settings.first().enabledWallets
-            val outcome = app.container.processor.process(raw, enabled) ?: return@launch
-            app.container.repository.record(outcome)
+            mutex.withLock {
+                val enabled = app.container.settingsRepository.settings.first().enabledWallets
+                val outcome = app.container.processor.process(raw, enabled) ?: return@withLock
+                app.container.repository.record(outcome)
+            }
         }
     }
 

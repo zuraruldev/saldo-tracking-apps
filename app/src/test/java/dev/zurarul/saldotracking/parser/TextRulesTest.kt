@@ -69,4 +69,32 @@ class TextRulesTest {
         )
         assertNull(TextRules.classify(n("Info", "Rp 10.000"), Wallet.DANA))
     }
+
+    @Test
+    fun classify_handlesTopUpConnectorsPurchaseTopUpsAndPaymentDiterimaAsExpense() {
+        assertEquals(
+            TxType.EXPENSE,
+            TextRules.classify(n("DANA", "Top Up ke GoPay Rp 50.000 berhasil"), Wallet.DANA)
+        )
+        assertEquals(
+            TxType.EXPENSE,
+            TextRules.classify(n("GoPay", "Isi ulang saldo kartu Flazz Rp 100.000 berhasil"), Wallet.GOPAY)
+        )
+        assertEquals(
+            TxType.EXPENSE,
+            TextRules.classify(n("DANA", "Pembayaran Top Up Pulsa Rp 50.000 berhasil"), Wallet.DANA)
+        )
+        assertEquals(
+            TxType.EXPENSE,
+            TextRules.classify(n("DANA", "Top up paket data Rp 50.000 berhasil"), Wallet.DANA)
+        )
+        assertEquals(
+            TxType.EXPENSE,
+            TextRules.classify(n("GoPay", "Pembayaran Rp 25.000 ke Merchant telah diterima"), Wallet.GOPAY)
+        )
+        assertEquals(
+            TxType.EXPENSE,
+            TextRules.classify(n("Livin", "Transfer ke Budi Rp 100.000 diterima"), Wallet.LIVIN)
+        )
+    }
 }

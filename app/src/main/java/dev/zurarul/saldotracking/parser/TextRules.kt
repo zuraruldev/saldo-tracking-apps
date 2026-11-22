@@ -38,7 +38,7 @@ object TextRules {
     )
 
     private val TOP_UP_REGEX = Regex(
-        """\b(top ?up|isi saldo|isi ulang saldo)\b\s*([a-z-]+)?"""
+        """\b(top ?up|isi saldo|isi ulang(?: saldo)?)\b(?:\s+(?:ke|saldo|kartu|dompet))*\s*([a-z-]+)?"""
     )
 
     private val EXTERNAL_TOPUP_TARGETS = setOf(
@@ -46,8 +46,18 @@ object TextRules {
         "e-money", "emoney", "brizzi", "tapcash", "jakcard", "isaku", "sakuku"
     )
 
-    private val INCOME_SUBSTRINGS = listOf(
-        "diterima", "menerima", "dana masuk", "uang masuk",
+    private val PURCHASE_TOPUP_TARGETS = setOf(
+        "pulsa", "paket", "data", "game", "pln", "token", "listrik", "tagihan"
+    )
+
+    private val EXPLICIT_PAYMENT_MARKERS = listOf(
+        "pembayaran", "pembelian", "bayar", "transfer ke", "kirim", "terkirim",
+        "tarik tunai", "penarikan", "berkurang", "dipotong", "terdebet", "qris",
+        "paid", "payment", "sent"
+    )
+
+    private val STRONG_INCOME_SUBSTRINGS = listOf(
+        "menerima", "dana masuk", "uang masuk",
         "transfer masuk", "saldo masuk", "masuk ke saldo",
         "bertambah", "refund", "pengembalian dana",
         "kamu dapat", "anda mendapatkan", "received", "incoming"
@@ -95,17 +105,26 @@ object TextRules {
                 WalletKind.EWALLET -> {
                     val target = topUpMatch.groupValues.getOrNull(2)?.lowercase().orEmpty()
                     val externalTargets = wallet.selfAlias?.let { EXTERNAL_TOPUP_TARGETS - it } ?: EXTERNAL_TOPUP_TARGETS
-                    if (target in externalTargets) TxType.EXPENSE else TxType.INCOME
+                    val hasExplicitPayment = EXPLICIT_PAYMENT_MARKERS.any { t.contains(it) }
+                    if (target in externalTargets || target in PURCHASE_TOPUP_TARGETS || hasExplicitPayment) {
+                        TxType.EXPENSE
+                    } else {
+                        TxType.INCOME
+                    }
                 }
             }
         }
 
-        if (INCOME_SUBSTRINGS.any { t.contains(it) } || INCOME_KREDIT_WORD_REGEX.containsMatchIn(t)) {
+        if (STRONG_INCOME_SUBSTRINGS.any { t.contains(it) } || INCOME_KREDIT_WORD_REGEX.containsMatchIn(t)) {
             return TxType.INCOME
         }
 
         if (EXPENSE_SUBSTRINGS.any { t.contains(it) } || EXPENSE_DEBIT_WORD_REGEX.containsMatchIn(t)) {
             return TxType.EXPENSE
+        }
+
+        if (t.contains("diterima")) {
+            return TxType.INCOME
         }
 
         return null

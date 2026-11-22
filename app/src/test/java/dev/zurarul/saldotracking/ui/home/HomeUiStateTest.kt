@@ -72,4 +72,12 @@ class HomeUiStateTest {
         assertEquals("21 Nov · 08:00", timeLabel(at("2026-11-21T08:00:00"), now, zone))
         assertEquals("21 Nov 2025 · 08:00", timeLabel(at("2025-11-21T08:00:00"), now, zone))
     }
+
+    @Test
+    fun isAutoTrackActive_requiresBothConnectedAndAccessGranted() {
+        assertTrue(isAutoTrackActive(connected = true, accessGranted = true))
+        assertFalse(isAutoTrackActive(connected = false, accessGranted = true))
+        assertFalse(isAutoTrackActive(connected = true, accessGranted = false))
+        assertFalse(isAutoTrackActive(connected = false, accessGranted = false))
+    }
 }

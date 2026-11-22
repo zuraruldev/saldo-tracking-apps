@@ -30,6 +30,14 @@ class AmountExtractorTest {
             25_000L,
             AmountExtractor.extract("Pembayaran Rp 25.000 berhasil. Saldo kamu sekarang Rp 1.225.000")
         )
+        assertEquals(
+            25_000L,
+            AmountExtractor.extract("Saldo saat ini Rp 1.250.000. Pembayaran Rp 25.000 berhasil")
+        )
+        assertEquals(
+            100_000L,
+            AmountExtractor.extract("Saldo rekening Rp 5.000.000. Transfer Rp 100.000 berhasil")
+        )
     }
 
     @Test

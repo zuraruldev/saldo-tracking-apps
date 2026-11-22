@@ -107,6 +107,16 @@ fun shiftAnchor(period: Period, anchor: YearMonth, step: Int): YearMonth = when 
     Period.YEARLY -> anchor
 }
 
+fun rollAnchorForNewToday(
+    anchor: YearMonth,
+    previousToday: LocalDate,
+    newToday: LocalDate
+): YearMonth {
+    val prevMonth = YearMonth.from(previousToday)
+    val newMonth = YearMonth.from(newToday)
+    return if (newMonth != prevMonth && anchor == prevMonth) newMonth else anchor
+}
+
 fun bucketDetail(period: Period, anchor: YearMonth, bucket: Bucket): String {
     val prefix = when (period) {
         Period.DAILY -> "${bucket.label} ${monthShortId(anchor.monthValue)}"

@@ -14,7 +14,8 @@ fun badgeLabel(status: LogStatus): String = when (status) {
     LogStatus.IGNORED_UNPARSED -> "Unparsed"
 }
 
-fun NotificationLog.canPromote(): Boolean = status != LogStatus.CAPTURED
+fun NotificationLog.canPromote(promotedIds: Set<Long> = emptySet()): Boolean =
+    status != LogStatus.CAPTURED && id !in promotedIds
 
 fun NotificationLog.toDraft(): TransactionDraft = TransactionDraft(
     id = 0L,

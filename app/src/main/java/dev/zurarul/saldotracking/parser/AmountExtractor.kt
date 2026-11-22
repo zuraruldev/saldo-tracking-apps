@@ -6,7 +6,7 @@ object AmountExtractor {
     )
 
     private val BALANCE_PREFIX_REGEX = Regex(
-        """(?i)(sisa saldo|saldo akhir|saldo (anda|kamu|mu)( saat ini| sekarang)?|saldo tersedia|saldo efektif)\s*(:|adalah|sebesar|menjadi)?\s*$"""
+        """(?i)(sisa saldo|saldo akhir|saldo rekening|saldo (?:(anda|kamu|mu)\s*)?(saat ini|sekarang)|saldo (anda|kamu|mu)|saldo tersedia|saldo efektif)\s*(:|adalah|sebesar|menjadi)?\s*$"""
     )
 
     fun extract(text: String): Long? {

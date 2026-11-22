@@ -59,6 +59,9 @@ object BackupCodec {
             if (tx.sourceApp.isBlank() || tx.title.isBlank()) {
                 throw BackupFormatException("Transaction missing sourceApp or title")
             }
+            if (tx.timestampMillis !in 1L..4_102_444_800_000L) {
+                throw BackupFormatException("Invalid transaction timestamp: ${tx.timestampMillis}")
+            }
         }
         return data
     }

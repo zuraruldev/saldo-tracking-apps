@@ -2,6 +2,8 @@ package dev.zurarul.saldotracking.parser
 
 import dev.zurarul.saldotracking.domain.TxType
 import dev.zurarul.saldotracking.domain.Wallet
+import kotlin.math.abs
+import kotlin.math.max
 
 class Deduplicator(private val windowMillis: Long = 15_000L) {
     private data class Key(
@@ -21,7 +23,7 @@ class Deduplicator(private val windowMillis: Long = 15_000L) {
     ): Boolean {
         val key = Key(wallet, amountIdr, type)
         val last = seenAt[key]
-        if (last != null && atMillis - last in 0..windowMillis) {
+        if (last != null && abs(atMillis - last) <= windowMillis) {
             return true
         }
         seenAt[key] = atMillis

@@ -48,6 +48,7 @@ import dev.zurarul.saldotracking.data.BackupFormatException
 import dev.zurarul.saldotracking.data.ThemeMode
 import dev.zurarul.saldotracking.domain.Wallet
 import dev.zurarul.saldotracking.domain.formatRupiah
+import dev.zurarul.saldotracking.ui.home.isAutoTrackActive
 import dev.zurarul.saldotracking.ui.theme.LocalCashflowColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -171,7 +172,10 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    val active = accessGranted || listenerConnected
+                    val active = isAutoTrackActive(
+                        connected = listenerConnected,
+                        accessGranted = accessGranted
+                    )
                     Text(
                         text = if (active) "Status Listener: Auto-Track ON" else "Status Listener: Auto-Track PAUSED",
                         style = MaterialTheme.typography.bodyMedium,

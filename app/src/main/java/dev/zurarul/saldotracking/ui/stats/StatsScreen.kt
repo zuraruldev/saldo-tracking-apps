@@ -23,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.zurarul.saldotracking.stats.Period
 import dev.zurarul.saldotracking.ui.theme.LocalCashflowColors
@@ -42,7 +46,18 @@ fun StatsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val cashflow = LocalCashflowColors.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var selectedBucketIndex by remember(state.period, state.anchor) { mutableStateOf<Int?>(null) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshToday()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Column(
         modifier = Modifier

@@ -129,4 +129,27 @@ class StatsUiStateTest {
             bucketDetail(Period.YEARLY, YearMonth.of(2026, 11), Bucket("2026", 500_000L, 28_000L))
         )
     }
+
+    @Test
+    fun rollAnchorForNewToday_advancesWhenOnPreviousCurrentMonth() {
+        val nov = YearMonth.of(2026, 11)
+        val dec = YearMonth.of(2026, 12)
+        assertEquals(
+            dec,
+            rollAnchorForNewToday(
+                anchor = nov,
+                previousToday = LocalDate.of(2026, 11, 30),
+                newToday = LocalDate.of(2026, 12, 1)
+            )
+        )
+        // If user manually browsed to October, keep October across rollover
+        assertEquals(
+            YearMonth.of(2026, 10),
+            rollAnchorForNewToday(
+                anchor = YearMonth.of(2026, 10),
+                previousToday = LocalDate.of(2026, 11, 30),
+                newToday = LocalDate.of(2026, 12, 1)
+            )
+        )
+    }
 }
