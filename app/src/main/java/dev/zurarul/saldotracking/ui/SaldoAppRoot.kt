@@ -30,6 +30,8 @@ import dev.zurarul.saldotracking.ui.home.HomeViewModel
 import dev.zurarul.saldotracking.ui.onboarding.OnboardingScreen
 import dev.zurarul.saldotracking.ui.settings.SettingsScreen
 import dev.zurarul.saldotracking.ui.settings.SettingsViewModel
+import dev.zurarul.saldotracking.ui.stats.StatsScreen
+import dev.zurarul.saldotracking.ui.stats.StatsViewModel
 import kotlinx.coroutines.launch
 
 enum class AppTab(val label: String) {
@@ -59,6 +61,7 @@ fun SaldoAppRoot(container: AppContainer) {
     }
 
     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
+    val statsViewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory)
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 
     Scaffold(
@@ -100,9 +103,7 @@ fun SaldoAppRoot(container: AppContainer) {
                     viewModel = homeViewModel,
                     onOpenSettings = { currentTab = AppTab.SETTINGS }
                 )
-                AppTab.STATS -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Stats")
-                }
+                AppTab.STATS -> StatsScreen(viewModel = statsViewModel)
                 AppTab.SETTINGS -> SettingsScreen(viewModel = settingsViewModel)
             }
         }
